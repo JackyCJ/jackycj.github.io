@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JackyCJ Blog</title>
+    <description>Every failure is leading towards success.</description>
+    <link>http://localhost:4000/</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Wed, 16 Oct 2019 14:23:31 +0800</pubDate>
+    <lastBuildDate>Wed, 16 Oct 2019 14:23:31 +0800</lastBuildDate>
+    <generator>Jekyll v4.0.0</generator>
+    
+      <item>
+        <title>Python中的单例模式的几种实现方式的及优化</title>
+        <description>&lt;h1 id=&quot;python中的单例模式的几种实现方式的及优化&quot;&gt;Python中的单例模式的几种实现方式的及优化&lt;/h1&gt;
+
+&lt;h2 id=&quot;单例模式&quot;&gt;单例模式&lt;/h2&gt;
+
+&lt;p&gt;单例模式（Singleton Pattern）是一种常用的软件设计模式，该模式的主要目的是确保某一个类只有一个实例存在。当你希望在整个系统中，某个类只能出现一个实例时，单例对象就能派上用场。&lt;/p&gt;
+
+&lt;p&gt;比如，某个服务器程序的配置信息存放在一个文件中，客户端通过一个 AppConfig 的类来读取配置文件的信息。如果在程序运行期间，有很多地方都需要使用配置文件的内容，也就是说，很多地方都需要创建 AppConfig 对象的实例，这就导致系统中存在多个 AppConfig 的实例对象，而这样会严重浪费内存资源，尤其是在配置文件内容很多的情况下。事实上，类似 AppConfig 这样的类，我们希望在程序运行期间只存在一个实例对象。&lt;/p&gt;
+
+&lt;p&gt;在 Python 中，我们可以用多种方法来实现单例模式&lt;/p&gt;
+
+&lt;p&gt;实现单例模式的几种方式&lt;/p&gt;
+
+&lt;h3 id=&quot;1使用模块&quot;&gt;1.使用模块&lt;/h3&gt;
+
+&lt;p&gt;其实，Python 的模块就是天然的单例模式，因为模块在第一次导入时，会生成 .pyc 文件，当第二次导入时，就会直接加载 .pyc 文件，而不会再次执行模块代码。因此，我们只需把相关的函数和数据定义在一个模块中，就可以获得一个单例对象了。如果我们真的想要一个单例类，可以考虑这样做：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mysingleton.py
+
+class Singleton(object):
+    def foo(self):
+        pass
+singleton = Singleton()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;将上面的代码保存在文件 mysingleton.py 中，要使用时，直接在其他文件中导入此文件中的对象，这个对象即是单例模式的对象&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;from a import singleton
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;2使用装饰器&quot;&gt;2.使用装饰器&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;def Singleton(cls):
+    _instance = {}
+
+    def _singleton(*args, **kargs):
+        if cls not in _instance:
+            _instance[cls] = cls(*args, **kargs)
+        return _instance[cls]
+
+    return _singleton
+
+
+@Singleton
+class A(object):
+    a = 1
+
+    def __init__(self, x=0):
+        self.x = x
+
+
+a1 = A(2)
+a2 = A(3)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;3使用类&quot;&gt;3.使用类&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Singleton(object):
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def instance(cls, *args, **kwargs):
+        if not hasattr(Singleton, &quot;_instance&quot;):
+            Singleton._instance = Singleton(*args, **kwargs)
+        return Singleton._instance
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;一般情况，大家以为这样就完成了单例模式，但是这样当使用多线程时会存在问题&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Singleton(object):
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def instance(cls, *args, **kwargs):
+        if not hasattr(Singleton, &quot;_instance&quot;):
+            Singleton._instance = Singleton(*args, **kwargs)
+        return Singleton._instance
+
+import threading
+
+def task(arg):
+    obj = Singleton.instance()
+    print(obj)
+
+for i in range(10):
+    t = threading.Thread(target=task,args=[i,])
+    t.start()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;程序执行后，打印结果如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;__main__.Singleton object at 0x02C933D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02C933D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02C933D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02C933D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02C933D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02C933D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02C933D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02C933D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02C933D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02C933D0&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;看起来也没有问题，那是因为执行速度过快，如果在init方法中有一些IO操作，就会发现问题了，下面我们通过time.sleep模拟&lt;/p&gt;
+
+&lt;p&gt;我们在上面__init__方法中加入以下代码：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    def __init__(self):
+        import time
+        time.sleep(1)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;重新执行程序后，结果如下&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;__main__.Singleton object at 0x034A3410&amp;gt;
+&amp;lt;__main__.Singleton object at 0x034BB990&amp;gt;
+&amp;lt;__main__.Singleton object at 0x034BB910&amp;gt;
+&amp;lt;__main__.Singleton object at 0x034ADED0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x034E6BD0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x034E6C10&amp;gt;
+&amp;lt;__main__.Singleton object at 0x034E6B90&amp;gt;
+&amp;lt;__main__.Singleton object at 0x034BBA30&amp;gt;
+&amp;lt;__main__.Singleton object at 0x034F6B90&amp;gt;
+&amp;lt;__main__.Singleton object at 0x034E6A90&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;问题出现了！按照以上方式创建的单例，无法支持多线程&lt;/p&gt;
+
+&lt;p&gt;解决办法：加锁！未加锁部分并发执行,加锁部分串行执行,速度降低,但是保证了数据安全&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;import time
+import threading
+class Singleton(object):
+    _instance_lock = threading.Lock()
+
+    def __init__(self):
+        time.sleep(1)
+
+    @classmethod
+    def instance(cls, *args, **kwargs):
+        with Singleton._instance_lock:
+            if not hasattr(Singleton, &quot;_instance&quot;):
+                Singleton._instance = Singleton(*args, **kwargs)
+        return Singleton._instance
+
+
+def task(arg):
+    obj = Singleton.instance()
+    print(obj)
+for i in range(10):
+    t = threading.Thread(target=task,args=[i,])
+    t.start()
+time.sleep(20)
+obj = Singleton.instance()
+print(obj)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;打印结果如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;__main__.Singleton object at 0x02D6B110&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02D6B110&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02D6B110&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02D6B110&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02D6B110&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02D6B110&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02D6B110&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02D6B110&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02D6B110&amp;gt;
+&amp;lt;__main__.Singleton object at 0x02D6B110&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;这样就差不多了，但是还是有一点小问题，就是当程序执行时，执行了time.sleep(20)后，下面实例化对象时，此时已经是单例模式了，但我们还是加了锁，这样不太好，再进行一些优化，把intance方法，改成下面的这样就行：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    @classmethod
+    def instance(cls, *args, **kwargs):
+        if not hasattr(Singleton, &quot;_instance&quot;):
+            with Singleton._instance_lock:
+                if not hasattr(Singleton, &quot;_instance&quot;):
+                    Singleton._instance = Singleton(*args, **kwargs)
+        return Singleton._instance
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;这样，一个可以支持多线程的单例模式就完成了&lt;/p&gt;
+
+&lt;p&gt;这种方式实现的单例模式，使用时会有限制，以后实例化必须通过&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;obj = Singleton.instance() 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;如果用 obj=Singleton() ,这种方式得到的不是单例&lt;/p&gt;
+
+&lt;h3 id=&quot;4基于__new__方法实现推荐使用方便&quot;&gt;4.基于__new__方法实现（推荐使用，方便）&lt;/h3&gt;
+
+&lt;p&gt;通过上面例子，我们可以知道，当我们实现单例时，为了保证线程安全需要在内部加入锁&lt;/p&gt;
+
+&lt;p&gt;我们知道，当我们实例化一个对象时，是先执行了类的__new__方法（我们没写时，默认调用object.&lt;strong&gt;new&lt;/strong&gt;），实例化对象；然后再执行类的__init__方法，对这个对象进行初始化，所有我们可以基于这个，实现单例模式&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;import threading
+class Singleton(object):
+    _instance_lock = threading.Lock()
+
+    def __init__(self):
+        pass
+
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(Singleton, &quot;_instance&quot;):
+            with Singleton._instance_lock:
+                if not hasattr(Singleton, &quot;_instance&quot;):
+                    Singleton._instance = object.__new__(cls)  
+        return Singleton._instance
+
+obj1 = Singleton()
+obj2 = Singleton()
+print(obj1,obj2)
+
+def task(arg):
+    obj = Singleton()
+    print(obj)
+
+for i in range(10):
+    t = threading.Thread(target=task,args=[i,])
+    t.start()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;打印结果如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt; &amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt;
+&amp;lt;__main__.Singleton object at 0x038B33D0&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;采用这种方式的单例模式，以后实例化对象时，和平时实例化对象的方法一样 obj = Singleton()&lt;/p&gt;
+
+&lt;h3 id=&quot;5基于metaclass方式实现&quot;&gt;5.基于metaclass方式实现&lt;/h3&gt;
+
+&lt;p&gt;相关知识&lt;/p&gt;
+
+&lt;p&gt;1.类由type创建，创建类时，type的__init__方法自动执行，类() 执行type的 &lt;strong&gt;call__方法(类的__new__方法,类的__init__方法)
+2.对象由类创建，创建对象时，类的__init__方法自动执行，对象()执行类的 __call&lt;/strong&gt; 方法&lt;/p&gt;
+
+&lt;p&gt;例子：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Foo:
+    def __init__(self):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        pass
+
+obj = Foo()# 执行type的 __call__ 方法，调用 Foo类（是type的对象）的 __new__方法，用于创建对象，然后调用 Foo类（是type的对象）的 __init__方法，用于对对象初始化。
+obj()    # 执行Foo的 __call__ 方法    
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;元类的使用&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class SingletonType(type):
+    def __init__(self,*args,**kwargs):
+        super(SingletonType,self).__init__(*args,**kwargs)
+
+    def __call__(cls, *args, **kwargs): # 这里的cls，即Foo类
+        print('cls',cls)
+        obj = cls.__new__(cls,*args, **kwargs)
+        cls.__init__(obj,*args, **kwargs) # Foo.__init__(obj)
+        return obj
+
+class Foo(metaclass=SingletonType): # 指定创建Foo的type为SingletonType
+    def __init__(self，name):
+        self.name = name
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(cls)
+
+obj = Foo('xx')
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;实现单例模式&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;import threading
+
+class SingletonType(type):
+    _instance_lock = threading.Lock()
+    def __call__(cls, *args, **kwargs):
+        if not hasattr(cls, &quot;_instance&quot;):
+            with SingletonType._instance_lock:
+                if not hasattr(cls, &quot;_instance&quot;):
+                    cls._instance = super(SingletonType,cls).__call__(*args, **kwargs)
+        return cls._instance
+
+class Foo(metaclass=SingletonType):
+    def __init__(self,name):
+        self.name = name
+
+
+obj1 = Foo('name')
+obj2 = Foo('name')
+print(obj1,obj2)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;转载自：https://www.cnblogs.com/huchong/p/8244279.html&lt;/p&gt;
+
+</description>
+        <pubDate>Fri, 11 Oct 2019 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/10/11/Python%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/10/11/Python%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</guid>
+        
+        <category>python</category>
+        
+        <category>Singleton Pattern</category>
+        
+        <category>thread</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Jekyll基本用法</title>
+        <description>&lt;h1 id=&quot;jekyll基本用法&quot;&gt;Jekyll基本用法&lt;/h1&gt;
+
+&lt;p&gt;安装了 Jekyll 的 Gem 包之后，就可以在命令行中使用 Jekyll 命令了。有以下这些用法：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ jekyll build
+# =&amp;gt; 当前文件夹中的内容将会生成到 ./_site 文件夹中。
+
+$ jekyll build --destination &amp;lt;destination&amp;gt;
+# =&amp;gt; 当前文件夹中的内容将会生成到目标文件夹&amp;lt;destination&amp;gt;中。
+
+$ jekyll build --source &amp;lt;source&amp;gt; --destination &amp;lt;destination&amp;gt;
+# =&amp;gt; 指定源文件夹&amp;lt;source&amp;gt;中的内容将会生成到目标文件夹&amp;lt;destination&amp;gt;中。
+
+$ jekyll build --watch
+# =&amp;gt; 当前文件夹中的内容将会生成到 ./_site 文件夹中，
+#    查看改变，并且自动再生成。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;在自动构建过程中对 _config.yml 的修改将不会被包含其中。&lt;/p&gt;
+
+&lt;p&gt;_config.yml 管理包含全局配置和变量定义在内的配置文件 并且这些变量定义在执行时会被读取. 所有 _config.yml 中的改动 在自动构建过程中，都不会被加载直到下一次执行开始。&lt;/p&gt;
+
+&lt;p&gt;注意 Data Files 在自动构建过程中会被包含和加载。
+Destination 文件夹会在站点建立时被清理&lt;/p&gt;
+
+&lt;destination&gt; 的内容默认在站点建立时会被自动清理。不是你创建的文件和文件夹会被删除。你想在 &lt;destination&gt; 保留的文件和文件夹应在 &lt;keep_files&gt; 里指定。
+
+不要把&lt;destination&gt; 设置到重要的路径上，而应该把它作为一个暂存区域,从那里复制文件到您的web服务器。
+
+Jekyll 同时也集成了一个开发用的服务器，可以让你使用浏览器在本地进行预览。
+
+```
+$ jekyll serve
+# =&amp;gt; 一个开发服务器将会运行在 http://localhost:4000/
+# Auto-regeneration（自动再生成文件）: 开启。使用 `--no-watch` 来关闭。
+
+$ jekyll serve --detach
+# =&amp;gt; 功能和`jekyll serve`命令相同，但是会脱离终端在后台运行。
+#    如果你想关闭服务器，可以使用`kill -9 1234`命令，&quot;1234&quot; 是进程号（PID）。
+#    如果你找不到进程号，那么就用`ps aux | grep jekyll`命令来查看，然后关闭服务器。[更多](http://unixhelp.ed.ac.uk/shell/jobz5.html).
+```
+
+默认行为
+
+在2.4版本中， serve 指令将会自动监测变化。想关闭这功能，你可以使用 jekyll serve --no-watch ，这会保留旧行为。
+
+```
+$ jekyll serve --no-watch
+# =&amp;gt; 和 `jekyll serve` 一样，但不会监测变化。
+```
+还有一些可以配置的配置选项. 很多配置选项既可以在命令行中作为标识(flags)设定，也可以在源文件根目录中的 _config.yml 文件中进行设定。Jekyll 会自动加载这些配置。比如你在你的 _config.yml 文件中添加了下面几行：
+
+```
+source:      _source
+destination: _deploy
+```
+那么就等价于执行了以下两条命令：
+
+```
+$ jekyll build
+$ jekyll build --source _source --destination _deploy
+```
+有关配置选项的更详细说明，请查看配置页面.
+
+如果你对离线浏览这些文档感兴趣，可以安装 jekyll-docs 的 gem ，在你终端运行 jekyll docs 来查看。
+
+转载自：http://jekyllcn.com/docs/usage/
+&lt;/destination&gt;&lt;/keep_files&gt;&lt;/destination&gt;&lt;/destination&gt;
+</description>
+        <pubDate>Fri, 11 Oct 2019 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/10/11/Jekyll%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/10/11/Jekyll%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95/</guid>
+        
+        <category>Jekyll</category>
+        
+        <category>macOS</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>三种协议的对比</title>
+        <description>&lt;h1 id=&quot;三种协议的对比&quot;&gt;三种协议的对比&lt;/h1&gt;
+
+&lt;p&gt;目前常用的协议有VNC/SPICE/RDP三种，就在这里做一个简单的介绍。&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt; &lt;/th&gt;
+      &lt;th&gt;SPICE&lt;/th&gt;
+      &lt;th&gt;VNC&lt;/th&gt;
+      &lt;th&gt;RDP&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;BIOS屏幕显示&lt;/td&gt;
+      &lt;td&gt;能&lt;/td&gt;
+      &lt;td&gt;能&lt;/td&gt;
+      &lt;td&gt;不能&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;全彩支持&lt;/td&gt;
+      &lt;td&gt;能&lt;/td&gt;
+      &lt;td&gt;能&lt;/td&gt;
+      &lt;td&gt;能&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;更改分辨率&lt;/td&gt;
+      &lt;td&gt;能&lt;/td&gt;
+      &lt;td&gt;能&lt;/td&gt;
+      &lt;td&gt;能&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;多显示器&lt;/td&gt;
+      &lt;td&gt;多显示器支持（高达4画面）&lt;/td&gt;
+      &lt;td&gt;只有一个屏幕&lt;/td&gt;
+      &lt;td&gt;多显示器支持&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;图像传输&lt;/td&gt;
+      &lt;td&gt;图像和图形传输&lt;/td&gt;
+      &lt;td&gt;图像传输&lt;/td&gt;
+      &lt;td&gt;图像和图形传输&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;视频播放支持&lt;/td&gt;
+      &lt;td&gt;GPU加速支持&lt;/td&gt;
+      &lt;td&gt;不能&lt;/td&gt;
+      &lt;td&gt;GPU加速支持&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;音频传输&lt;/td&gt;
+      &lt;td&gt;双向语音可以控制&lt;/td&gt;
+      &lt;td&gt;不能&lt;/td&gt;
+      &lt;td&gt;双向语音可以控制&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;鼠标控制&lt;/td&gt;
+      &lt;td&gt;客户端服务器都可以控制&lt;/td&gt;
+      &lt;td&gt;服务器端控制&lt;/td&gt;
+      &lt;td&gt;服务器端控制&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;USB传输&lt;/td&gt;
+      &lt;td&gt;USB可以通过网络传输&lt;/td&gt;
+      &lt;td&gt;不能&lt;/td&gt;
+      &lt;td&gt;USB可以通过网络传输&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;一vnc&quot;&gt;一、VNC&lt;/h2&gt;
+
+&lt;p&gt;适用系统：windows、linux&lt;/p&gt;
+
+&lt;p&gt;网络流量：较小，常用100k左右&lt;/p&gt;
+
+&lt;p&gt;适用场景：主要用于linux的服务器的管理，由于无声音和usb传输，不满足于虚拟桌面的使用&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#安装
+yum install tigervnc-server   
+
+#vnc服务器启动
+vncserver   
+
+#查看连接
+vncserver  -list  
+
+#修改访问密码
+vncpasswd   
+
+#关闭vncserver
+vncserver -kill :n
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;配置文件修改&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#配置文件修改 
+vim /etc/sysconfig/vncservers  
+
+# VNCSERVERS=&quot;2:myusername&quot;   sessionnumber，用户名
+# VNCSERVERARGS[2]=&quot;-geometry 800x600 -nolisten tcp -localhost&quot;
+
+VNCSERVERS=&quot;1:root&quot; # display port and username
+VNCSERVERARGS[1]=&quot;-geometry 800x600 -nolisten tcp -nohttpd&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;二spice&quot;&gt;二、SPICE&lt;/h2&gt;
+
+&lt;p&gt;适用系统：linux&lt;/p&gt;
+
+&lt;p&gt;网络流量：较大，正常使用10-20M&lt;/p&gt;
+
+&lt;p&gt;适用场景：由于在色彩、音频和usb方面，适用于虚拟桌面，主要用于虚拟机的虚拟桌面应用&lt;/p&gt;
+
+&lt;p&gt;使用：安装后，需要在虚拟机中配置，参考本人关于虚拟机的blog。&lt;/p&gt;
+
+&lt;h2 id=&quot;三rdp&quot;&gt;三、RDP&lt;/h2&gt;
+
+&lt;p&gt;目前在windows上 rdp有两种，remote，remotefx&lt;/p&gt;
+
+&lt;p&gt;适用系统：windows、linux&lt;/p&gt;
+
+&lt;p&gt;网络流量：较小，正常使用100-200k左右&lt;/p&gt;
+
+&lt;p&gt;适用场景：由于在色彩、音频、usb及本地磁盘映射方面较好，非常适用于虚拟桌面&lt;/p&gt;
+
+&lt;p&gt;windows 使用：系统安装后即可使用。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#linux上安装rdesktop，用于linux访问windws远程桌面
+
+#安装
+yum install rdesktop
+
+#如需要在界面上使用需要安装
+yum install tsclient
+
+#使用命令行访问，-f 全屏 -a颜色 -c L 连接类型
+rdesktop -f -a 16 119.0.0.100:1234
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#使用rdp协议访问linux
+yum install xrdp
+
+#启动xrdp服务
+xrdp
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;转载自：http://www.cnblogs.com/qpanda/p/4331782.html&lt;/p&gt;
+</description>
+        <pubDate>Thu, 10 Oct 2019 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/10/10/%E4%B8%89%E7%A7%8D%E5%8D%8F%E8%AE%AE%E7%9A%84%E5%AF%B9%E6%AF%94/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/10/10/%E4%B8%89%E7%A7%8D%E5%8D%8F%E8%AE%AE%E7%9A%84%E5%AF%B9%E6%AF%94/</guid>
+        
+        <category>RDP</category>
+        
+        <category>SPICE</category>
+        
+        <category>VNC</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>macOS 开启 VNC 远程桌面和 SSH 服务</title>
+        <description>&lt;h1 id=&quot;macos-开启-vnc-远程桌面和-ssh-服务&quot;&gt;macOS 开启 VNC 远程桌面和 SSH 服务&lt;/h1&gt;
+
+&lt;p&gt;准备用 macOS 来做为服务器，既然是服务器，那不可缺少的是远程管理，实际上 macOS 自带 VNC 远程桌面和 SSH 服务，只是默认没有开启，下面我们来开启它们。&lt;/p&gt;
+
+&lt;h2 id=&quot;一开启-vnc&quot;&gt;一、开启 VNC&lt;/h2&gt;
+
+&lt;p&gt;macOS 开启 VNC 服务可以实现远程桌面控制，方法是：系统偏好设置 -&amp;gt; 共享，打开屏幕共享，添加相应的账号就可以了，如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://tva1.sinaimg.cn/large/006y8mN6gy1g7yysgfe3wj31140titlx.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;客户端那边如果也是 macOS，就在浏览器输入 IP 地址，比如：vnc://192.168.4.92，就会打开屏幕共享的客户端，输入用户名密码就可以连接成功，如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://tva1.sinaimg.cn/large/006y8mN6gy1g7yyvzw7xtj31110u0qv6.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;二开启-ssh-服务&quot;&gt;二、开启 SSH 服务&lt;/h2&gt;
+
+&lt;p&gt;macOS 默认是有 SSH 客户端，但是默认没有开 SSH 服务，打开的方法是：系统偏好设置 -&amp;gt; 共享，打开远程登录就，然后添加相应的账户可以了，如下图：
+&lt;img src=&quot;https://tva1.sinaimg.cn/large/006y8mN6gy1g7yywu5wixj31140tigxd.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;转载自&lt;a href=&quot;https://www.exchen.net/macos-开启-vnc-远程桌面和-ssh-服务.html&quot;&gt;https://www.exchen.net/macos-开启-vnc-远程桌面和-ssh-服务.html&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Thu, 10 Oct 2019 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/10/10/macOS-%E5%BC%80%E5%90%AF-VNC-%E8%BF%9C%E7%A8%8B%E6%A1%8C%E9%9D%A2%E5%92%8C-SSH-%E6%9C%8D%E5%8A%A1/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/10/10/macOS-%E5%BC%80%E5%90%AF-VNC-%E8%BF%9C%E7%A8%8B%E6%A1%8C%E9%9D%A2%E5%92%8C-SSH-%E6%9C%8D%E5%8A%A1/</guid>
+        
+        <category>macOS</category>
+        
+        <category>SSH</category>
+        
+        <category>VNC</category>
+        
+        
+      </item>
+    
+  </channel>
+</rss>
