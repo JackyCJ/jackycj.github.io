@@ -7,10 +7,10 @@ author:
 header-img: img/post-bg-2015.jpg
 catalog: true
 tags:
-    - macOS
+    - MacOS
     - SSH
     - VNC
-    
+
 ---
 
 # macOS 开启 VNC 远程桌面和 SSH 服务
