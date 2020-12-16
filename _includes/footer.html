@@ -219,7 +219,11 @@
 </script>
 {% endif %}
 
-
+<!-- CNZZ -->
+{% if site.cn_track_id %}
+<script type="text/javascript" src="https://s9.cnzz.com/z_stat.php?id={{ site.cn_track_id }}&web_id={{ site.cn_track_id }}">
+</script>
+{% endif %}
 
 <!-- Side Catalog -->
 {% if page.catalog %}
