@@ -9,7 +9,7 @@
     <meta name="description" content="Every failure is leading towards success.">
     <meta name="keywords"  content="JackyCJ的博客">
     <meta name="theme-color" content="#000000">
-    
+
     <title>Jekyll基本用法 - JackyCJ的博客 | JackyCJ Blog</title>
 
     <!-- Web App Manifest -->
@@ -20,7 +20,7 @@
 
     <!-- Safari Webpage Icon    by-BY -->
     <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
-    
+
     <!-- Canonical URL -->
     <link rel="canonical" href="http://localhost:4000/2019/10/11/Jekyll%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95/">
 
@@ -179,7 +179,7 @@
                         
                         <a class="tag" href="/tags/#Jekyll" title="Jekyll">Jekyll</a>
                         
-                        <a class="tag" href="/tags/#macOS" title="macOS">macOS</a>
+                        <a class="tag" href="/tags/#MacOS" title="MacOS">MacOS</a>
                         
                     </div>
                     <h1>Jekyll基本用法</h1>
@@ -223,21 +223,18 @@ $ jekyll build --watch
 #    查看改变，并且自动再生成。
 </code></pre></div></div>
 
-<p>在自动构建过程中对 _config.yml 的修改将不会被包含其中。</p>
+<h3 id="在自动构建过程中对_configyml的修改将不会被包含其中">在自动构建过程中对_config.yml的修改将不会被包含其中</h3>
+<p>在_config.yml管理包含全局配置和变量定义在内的配置文件 并且这些变量定义在执行时会被读取.所有_config.yml中的改动在自动构建过程中，都不会被加载直到下一次执行开始。</p>
 
-<p>_config.yml 管理包含全局配置和变量定义在内的配置文件 并且这些变量定义在执行时会被读取. 所有 _config.yml 中的改动 在自动构建过程中，都不会被加载直到下一次执行开始。</p>
+<p>注意 Data Files 在自动构建过程中会被包含和加载。</p>
 
-<p>注意 Data Files 在自动构建过程中会被包含和加载。
-Destination 文件夹会在站点建立时被清理</p>
+<h3 id="destination文件夹会在站点建立时被清理">Destination文件夹会在站点建立时被清理</h3>
+<p>destination的内容默认在站点建立时会被自动清理。不是你创建的文件和文件夹会被删除。你想在 destination 保留的文件和文件夹应在 keep_files 里指定。
+不要把 destination 设置到重要的路径上，而应该把它作为一个暂存区域,从那里复制文件到您的web服务器。</p>
 
-<destination> 的内容默认在站点建立时会被自动清理。不是你创建的文件和文件夹会被删除。你想在 <destination> 保留的文件和文件夹应在 <keep_files> 里指定。
+<p>Jekyll 同时也集成了一个开发用的服务器，可以让你使用浏览器在本地进行预览。</p>
 
-不要把<destination> 设置到重要的路径上，而应该把它作为一个暂存区域,从那里复制文件到您的web服务器。
-
-Jekyll 同时也集成了一个开发用的服务器，可以让你使用浏览器在本地进行预览。
-
-```
-$ jekyll serve
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ jekyll serve
 # =&gt; 一个开发服务器将会运行在 http://localhost:4000/
 # Auto-regeneration（自动再生成文件）: 开启。使用 `--no-watch` 来关闭。
 
@@ -245,34 +242,42 @@ $ jekyll serve --detach
 # =&gt; 功能和`jekyll serve`命令相同，但是会脱离终端在后台运行。
 #    如果你想关闭服务器，可以使用`kill -9 1234`命令，"1234" 是进程号（PID）。
 #    如果你找不到进程号，那么就用`ps aux | grep jekyll`命令来查看，然后关闭服务器。[更多](http://unixhelp.ed.ac.uk/shell/jobz5.html).
-```
+</code></pre></div></div>
 
-默认行为
+<h3 id="默认行为">默认行为</h3>
+<p>在2.4版本中，serve指令将会自动监测变化。想关闭这功能，你可以使用 jekyll serve –no-watch，这会保留旧行为。</p>
 
-在2.4版本中， serve 指令将会自动监测变化。想关闭这功能，你可以使用 jekyll serve --no-watch ，这会保留旧行为。
-
-```
-$ jekyll serve --no-watch
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ jekyll serve --no-watch
 # =&gt; 和 `jekyll serve` 一样，但不会监测变化。
-```
-还有一些可以配置的配置选项. 很多配置选项既可以在命令行中作为标识(flags)设定，也可以在源文件根目录中的 _config.yml 文件中进行设定。Jekyll 会自动加载这些配置。比如你在你的 _config.yml 文件中添加了下面几行：
+</code></pre></div></div>
 
-```
-source:      _source
+<p>还有一些可以配置的配置选项. 很多配置选项既可以在命令行中作为标识(flags)设定，也可以在源文件根目录中的_config.yml文件中进行设定。Jekyll会自动加载这些配置。比如你在你的_config.yml文件中添加了下面几行：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>source:      _source
 destination: _deploy
-```
-那么就等价于执行了以下两条命令：
+</code></pre></div></div>
+<p>那么就等价于执行了以下两条命令：</p>
 
-```
-$ jekyll build
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ jekyll build
 $ jekyll build --source _source --destination _deploy
-```
-有关配置选项的更详细说明，请查看配置页面.
+</code></pre></div></div>
+<p>有关配置选项的更详细说明，请查看配置页面.
+如果你对离线浏览这些文档感兴趣，可以安装 jekyll-docs 的gem，在你终端运行 jekyll docs 来查看。</p>
 
-如果你对离线浏览这些文档感兴趣，可以安装 jekyll-docs 的 gem ，在你终端运行 jekyll docs 来查看。
-
-转载自：http://jekyllcn.com/docs/usage/
-</destination></keep_files></destination></destination>
+<h1 id="参考文档">参考文档</h1>
+<ul>
+  <li><a href="http://jekyllcn.com/docs/usage/">基本用法 - Jekyll</a></li>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td>[Command Line Usage</td>
+          <td>Jekyll](https://jekyllrb.com/docs/usage/)</td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
 
 
                 <hr style="visibility: hidden;">
@@ -288,9 +293,9 @@ $ jekyll build --source _source --destination _deploy
                     
                     
                     <li class="next">
-                        <a href="/2019/10/11/Python%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" data-toggle="tooltip" data-placement="top" title="Python中的单例模式的几种实现方式的及优化">
+                        <a href="/2019/10/11/Python3.x%E8%B0%83%E7%94%A8%E8%85%BE%E8%AE%AFAI/" data-toggle="tooltip" data-placement="top" title="Python3.x调用腾讯AI">
                         Next<br>
-                        <span>Python中的单例模式的几种实现方式的及优化</span>
+                        <span>Python3.x调用腾讯AI</span>
                         </a>
                     </li>
                     
@@ -336,8 +341,8 @@ $ jekyll build --source _source --destination _deploy
                     <div class="tags">
         				
                             
-                				<a href="/tags/#macOS" title="macOS" rel="2">
-                                    macOS
+                				<a href="/tags/#MacOS" title="MacOS" rel="8">
+                                    MacOS
                                 </a>
                             
         				
@@ -347,6 +352,98 @@ $ jekyll build --source _source --destination _deploy
                 				<a href="/tags/#VNC" title="VNC" rel="2">
                                     VNC
                                 </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#Python" title="Python" rel="23">
+                                    Python
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#Mongo" title="Mongo" rel="2">
+                                    Mongo
+                                </a>
+                            
+        				
+                            
+                				<a href="/tags/#Windows" title="Windows" rel="2">
+                                    Windows
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#Android" title="Android" rel="4">
+                                    Android
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#Docker" title="Docker" rel="2">
+                                    Docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#Flask" title="Flask" rel="2">
+                                    Flask
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
                             
         				
                             
@@ -471,7 +568,7 @@ $ jekyll build --source _source --destination _deploy
                     
                 </ul>
                 <p class="copyright text-muted">
-                    Copyright &copy; JackyCJ Blog 2019
+                    Copyright &copy; JackyCJ Blog 2020
                     <br>
                     Theme on <a href="https://github.com/JackyCJ/JackyCJ.github.io.git">GitHub</a> |
                     <iframe
@@ -520,15 +617,15 @@ $ jekyll build --source _source --destination _deploy
     }
 </script>
 
-<!-- 
-     Because of the native support for backtick-style fenced code blocks 
-     right within the Markdown is landed in Github Pages, 
-     From V1.6, There is no need for Highlight.js, 
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
      so Huxblog drops it officially.
 
-     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
-     - https://help.github.com/articles/creating-and-highlighting-code-blocks/ 
-     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers   
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
 -->
 <!--
     <script>
@@ -571,18 +668,17 @@ $ jekyll build --source _source --destination _deploy
 
 <script>
     // dynamic User by Hux
-    var _baId = '5c917ef62da067cd434533c32468ed0b';
+    var _baId = 'c630b3db954ed2982f67bd757fa2f5c7';
 
     // Originial
     var _hmt = _hmt || [];
     (function() {
       var hm = document.createElement("script");
-      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      hm.src = "https://hm.baidu.com/hm.js?" + _baId;
       var s = document.getElementsByTagName("script")[0];
       s.parentNode.insertBefore(hm, s);
     })();
 </script>
-
 
 
 
@@ -600,7 +696,7 @@ $ jekyll build --source _source --destination _deploy
             l = $('<li class="'+n+'_nav"></li>').append(c);
             $(selector).append(l);
         });
-        return true;    
+        return true;
     }
 
     generateCatalog(".catalog-body");
@@ -631,7 +727,6 @@ $ jekyll build --source _source --destination _deploy
         });
     });
 </script>
-
 
 
 
