@@ -10,3 +10,4 @@
 # 参考
 
 - [https://www.npmjs.com/package/python-shell](https://www.npmjs.com/package/python-shell)
+- [https://github.com/extrabacon/python-shell](https://github.com/extrabacon/python-shell)
